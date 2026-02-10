@@ -1,0 +1,30 @@
+[
+  {
+    "gameType": "single",
+    "rate": 9
+  },
+  {
+    "gameType": "jodi",
+    "rate": 90
+  },
+  {
+    "gameType": "singlePatti",
+    "rate": 150
+  },
+  {
+    "gameType": "doublePatti",
+    "rate": 300
+  },
+  {
+    "gameType": "triplePatti",
+    "rate": 900
+  },
+  {
+    "gameType": "halfSangam",
+    "rate": 1000
+  },
+  {
+    "gameType": "fullSangam",
+    "rate": 10000
+  }
+]

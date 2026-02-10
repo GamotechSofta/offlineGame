@@ -1,0 +1,15 @@
+[
+  {
+    "_id": "25543b8a-d1fe-4d61-802c-f73c8ca45671",
+    "id": "25543b8a-d1fe-4d61-802c-f73c8ca45671",
+    "username": "alex Carry",
+    "password": "admin123",
+    "name": "alex Carry",
+    "status": "active",
+    "createdAt": "2026-02-10T12:13:03.336Z",
+    "firstName": "alex",
+    "lastName": "Carry",
+    "email": "skm@gmail.com",
+    "phone": "9988776655"
+  }
+]

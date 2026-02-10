@@ -1,0 +1,38 @@
+[
+  {
+    "id": "bbbbe2fd-4e63-43fd-b6f9-3e940af482ff",
+    "type": "credit",
+    "playerId": "9598451a-43e9-4afe-aa2b-1bb99f1d63b7",
+    "playerName": "Player One",
+    "bookieId": "006dd513-5ad4-4681-a360-08d25c0575a2",
+    "amount": 5000,
+    "prevBalance": 0,
+    "newBalance": 5000,
+    "note": "Initial deposit",
+    "createdAt": "2026-02-10T12:35:17.237Z"
+  },
+  {
+    "id": "af85ecc6-0c07-4e54-bac1-60a63ced8086",
+    "type": "debit",
+    "playerId": "9598451a-43e9-4afe-aa2b-1bb99f1d63b7",
+    "playerName": "Player One",
+    "bookieId": "006dd513-5ad4-4681-a360-08d25c0575a2",
+    "amount": 1000,
+    "prevBalance": 5000,
+    "newBalance": 4000,
+    "note": "Cash withdrawal",
+    "createdAt": "2026-02-10T12:35:17.248Z"
+  },
+  {
+    "id": "3cabb68c-2ae5-4ea8-8741-da79ca617ad5",
+    "type": "credit",
+    "playerId": "0ab74c0e-91a0-4153-9825-ea5965dce60b",
+    "playerName": "hshsh",
+    "bookieId": "25543b8a-d1fe-4d61-802c-f73c8ca45671",
+    "amount": 2000,
+    "prevBalance": 0,
+    "newBalance": 2000,
+    "note": "added",
+    "createdAt": "2026-02-10T12:35:37.704Z"
+  }
+]

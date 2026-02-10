@@ -1,0 +1,272 @@
+﻿import React, { useEffect, useState } from 'react';
+import { useBettingWindow } from '../BettingWindowContext';
+
+const formatMoney = (v) => {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return '-';
+  return n.toFixed(1);
+};
+
+const formatDateTitle = (marketTitle, dateText) => {
+  const m = (marketTitle || '').toString().trim();
+  const d = (dateText || '').toString().trim();
+  if (m && d) return `${m} - ${d}`;
+  return m || d || 'Review Bet';
+};
+
+const renderBetNumber = (val) => {
+  const s = (val ?? '').toString().trim();
+  if (/^\d{3}-\d{3}$/.test(s)) {
+    const [open, close] = s.split('-');
+    const sumDigits = (x) => [...String(x)].reduce((acc, c) => acc + (Number(c) || 0), 0);
+    const j1 = sumDigits(open) % 10;
+    const j2 = sumDigits(close) % 10;
+    return `${open}-${j1}${j2}-${close}`;
+  }
+  if (/^\d{2}$/.test(s)) {
+    return (
+      <span className="inline-flex items-center justify-center gap-2">
+        <span>{s[0]}</span>
+        <span>{s[1]}</span>
+      </span>
+    );
+  }
+  return s || '-';
+};
+
+const BidReviewModal = ({
+  open,
+  onClose,
+  onSubmit,
+  marketTitle,
+  dateText,
+  labelKey = 'Digit',
+  rows = [],
+  walletBefore = 0,
+  totalBids = 0,
+  totalAmount = 0
+}) => {
+  const { allowed: bettingAllowed, message: bettingMessage } = useBettingWindow();
+  const [stage, setStage] = useState('review');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
+  useEffect(() => {
+    if (open) {
+      setStage('review');
+      setSubmitError('');
+    }
+  }, [open]);
+
+  if (!open && stage !== 'success') return null;
+
+  const before = Number(walletBefore) || 0;
+  const amount = Number(totalAmount) || 0;
+  const after = before - amount;
+  const insufficientBalance = after < 0;
+  const cannotSubmit = insufficientBalance || !bettingAllowed;
+  const handleClose = () => {
+    if (onClose) onClose();
+  };
+  const handleSubmitClick = async () => {
+    if (cannotSubmit) return;
+    setSubmitError('');
+    setSubmitting(true);
+    try {
+      const fn = onSubmit?.();
+      if (fn && typeof fn.then === 'function') await fn;
+
+      try {
+        const u = JSON.parse(localStorage.getItem('user') || 'null');
+        const userId =
+          u?._id || u?.id || u?.userId || u?.userid || u?.user_id || u?.uid || null;
+
+        const entry = {
+          id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
+          userId,
+          marketTitle: marketTitle || '',
+          dateText: dateText || '',
+          labelKey,
+          rows: Array.isArray(rows) ? rows : [],
+          totalBets: Number(totalBids) || 0,
+          totalAmount: Number(totalAmount) || 0,
+          session: (rows?.[0]?.type || '').toString(),
+          createdAt: new Date().toISOString(),
+        };
+
+        const raw = localStorage.getItem('betHistory');
+        const prev = raw ? JSON.parse(raw) : [];
+        const next = Array.isArray(prev) ? [entry, ...prev] : [entry];
+        localStorage.setItem('betHistory', JSON.stringify(next.slice(0, 200)));
+      } catch (e) {}
+
+      setStage('success');
+    } catch (e) {
+      setSubmitError(e?.message || 'Failed to place bet');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[999] flex items-center justify-center p-3 sm:p-6">
+      {stage === 'review' ? (
+        <button type="button" onClick={handleClose} aria-label="Close" className="absolute inset-0 bg-black/60" />
+      ) : (
+        <div aria-hidden="true" className="absolute inset-0 bg-black/60" />
+      )}
+
+      <div className="relative w-full max-w-md sm:max-w-lg">
+        {stage === 'success' ? (
+          <div className="bg-blue-50 rounded-2xl shadow-2xl overflow-hidden border border-blue-200">
+            <style>{`
+              @keyframes successPop {
+                0% { transform: scale(0.6); opacity: 0; }
+                60% { transform: scale(1.08); opacity: 1; }
+                100% { transform: scale(1); opacity: 1; }
+              }
+              @keyframes successDraw {
+                to { stroke-dashoffset: 0; }
+              }
+              .success-pop {
+                animation: successPop 420ms ease-out both;
+              }
+              .success-check-path {
+                stroke-dasharray: 48;
+                stroke-dashoffset: 48;
+                animation: successDraw 520ms 140ms ease-out forwards;
+              }
+            `}</style>
+            <div className="p-7 sm:p-8 flex flex-col items-center">
+              <div className="success-pop w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-500 flex items-center justify-center shadow-lg">
+                <svg className="w-10 h-10 sm:w-12 sm:h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
+                  <path className="success-check-path" strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div className="mt-6 text-center">
+                <div className="text-[#43b36a] font-semibold text-base sm:text-lg">
+                  Your Bet Placed Sucessfully
+                </div>
+              </div>
+            </div>
+            <div className="px-6 pb-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setStage('review');
+                  handleClose();
+                }}
+                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3.5 rounded-lg shadow-md active:scale-[0.99] transition-transform hover:from-blue-600 hover:to-blue-700"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div
+            className="bg-blue-50 rounded-2xl shadow-2xl overflow-hidden border border-blue-200 max-h-[min(90svh,720px)] sm:max-h-[calc(100vh-48px)] flex flex-col"
+            style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0px)' }}
+          >
+            <div className="bg-blue-800 text-white px-3 sm:px-4 py-2.5 text-center text-sm sm:text-lg font-semibold shrink-0 border-b border-blue-200">
+              {formatDateTitle(marketTitle, dateText)}
+            </div>
+
+            <div className="flex-1 flex flex-col min-h-0">
+              <div className="flex-1 overflow-y-auto overscroll-contain ios-scroll-touch px-3 sm:px-4 pt-3 sm:pt-4 min-h-0">
+                <div className="grid grid-cols-3 text-center font-semibold text-blue-600 text-[11px] sm:text-base">
+                  <div className="truncate">{labelKey}</div>
+                  <div className="truncate">Points</div>
+                  <div className="truncate">Type</div>
+                </div>
+                <div className="mt-2.5 sm:mt-3 space-y-2 sm:space-y-3">
+                  {rows.map((r) => (
+                    <div key={r.id} className="bg-blue-100 rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 border border-blue-200">
+                      <div className="grid grid-cols-3 text-center text-gray-900 font-semibold text-[12px] sm:text-base">
+                        <div className="truncate">{renderBetNumber(r.number)}</div>
+                        <div className="truncate text-blue-600">{r.points}</div>
+                        <div className="truncate font-medium text-gray-600 uppercase">{r.type}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="px-3 sm:px-4 pt-3 sm:pt-4 shrink-0">
+                <div className="rounded-2xl overflow-hidden border border-blue-200">
+                  <div className="grid grid-cols-2">
+                    <div className="p-3 sm:p-4 text-center border-r border-b border-blue-200">
+                      <div className="text-gray-600 text-[11px] sm:text-sm">Total Bets</div>
+                      <div className="text-gray-900 font-bold text-base sm:text-lg leading-tight">{totalBids}</div>
+                    </div>
+                    <div className="p-3 sm:p-4 text-center border-b border-blue-200">
+                      <div className="text-gray-600 text-[11px] sm:text-sm">Total Bet Amount</div>
+                      <div className="text-blue-600 font-bold text-base sm:text-lg leading-tight">{amount}</div>
+                    </div>
+                    <div className="p-3 sm:p-4 text-center border-r border-blue-200">
+                      <div className="text-gray-600 text-[11px] sm:text-sm">Wallet Balance Before Deduction</div>
+                      <div className="text-gray-900 font-bold text-base sm:text-lg leading-tight">{formatMoney(before)}</div>
+                    </div>
+                    <div className="p-3 sm:p-4 text-center">
+                      <div className="text-gray-600 text-[11px] sm:text-sm">Wallet Balance After Deduction</div>
+                      <div className={`font-bold text-base sm:text-lg leading-tight ${after < 0 ? 'text-red-600' : 'text-gray-900'}`}>{formatMoney(after)}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {!bettingAllowed && bettingMessage && (
+                <div className="mx-3 sm:mx-4 mt-2 p-3 rounded-xl bg-red-100 border border-red-300 text-red-600 text-sm shrink-0">
+                  {bettingMessage}
+                </div>
+              )}
+
+              {insufficientBalance && (
+                <div className="mx-3 sm:mx-4 mt-2 p-3 rounded-xl bg-blue-100 border border-blue-300 text-blue-600 text-sm shrink-0">
+                  Insufficient balance. Required: ₹{amount.toLocaleString('en-IN')}, Available: ₹{before.toLocaleString('en-IN')}. Add funds to place this bet.
+                </div>
+              )}
+
+              {submitError && (
+                <div className="mx-3 sm:mx-4 mt-2 p-3 rounded-xl bg-red-100 border border-red-300 text-red-600 text-sm shrink-0">
+                  {submitError}
+                </div>
+              )}
+
+              <div className="px-3 sm:px-4 pt-3 sm:pt-4 pb-3 sm:pb-4 text-center text-red-600 font-semibold text-[12px] sm:text-base shrink-0">
+                *Note: Bet once placed cannot be cancelled*
+              </div>
+            </div>
+
+            <div className="px-3 sm:px-4 py-3 sm:py-4 grid grid-cols-2 gap-3 sm:gap-4 bg-blue-50 shrink-0 border-t border-blue-200">
+              <button
+                type="button"
+                onClick={handleClose}
+                disabled={submitting}
+                className="bg-white border border-blue-200 text-gray-700 font-bold py-3 rounded-xl sm:rounded-2xl shadow-md active:scale-[0.99] transition-transform hover:border-blue-400 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmitClick}
+                disabled={submitting || cannotSubmit}
+                className="bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 rounded-xl sm:rounded-2xl shadow-md active:scale-[0.99] transition-transform hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {submitting ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Placing...
+                  </>
+                ) : (
+                  'Submit Bet'
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default BidReviewModal;

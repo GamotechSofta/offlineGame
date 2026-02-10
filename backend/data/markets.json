@@ -1,0 +1,30 @@
+[
+  {
+    "_id": "76befd19-a23c-48ec-b375-c6fefacd547f",
+    "marketName": "Saurabh Market",
+    "marketType": "main",
+    "startingTime": "17:00",
+    "closingTime": "19:00",
+    "betClosureTime": 300,
+    "openingNumber": null,
+    "closingNumber": null,
+    "displayResult": "***-**-***",
+    "isActive": true,
+    "isDeleted": false,
+    "createdAt": "2026-02-10T12:17:03.659Z"
+  },
+  {
+    "_id": "5431fe87-7bcd-4095-bbfe-28822e1a3456",
+    "marketName": "Roshan Bazaar",
+    "marketType": "main",
+    "startingTime": "19:00",
+    "closingTime": "20:00",
+    "betClosureTime": 100,
+    "openingNumber": null,
+    "closingNumber": null,
+    "displayResult": "***-**-***",
+    "isActive": true,
+    "isDeleted": false,
+    "createdAt": "2026-02-10T12:37:20.548Z"
+  }
+]

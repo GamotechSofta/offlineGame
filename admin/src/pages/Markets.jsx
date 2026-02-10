@@ -1,0 +1,70 @@
+import React, { useMemo, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AdminLayout from '../components/AdminLayout';
+import MarketList from '../components/MarketList';
+import MarketForm from '../components/MarketForm';
+import { useRefreshOnMarketReset } from '../hooks/useRefreshOnMarketReset';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5050/api';
+
+const Markets = () => {
+    const [markets, setMarkets] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showForm, setShowForm] = useState(false);
+    const [editingMarket, setEditingMarket] = useState(null);
+    const [formDefaultType, setFormDefaultType] = useState('main');
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
+
+    const mainMarkets = useMemo(() => markets || [], [markets]);
+
+    const fetchMarkets = async () => {
+        try { setLoading(true); const response = await fetch(`${API_BASE_URL}/markets/get-markets`); const data = await response.json(); if (data.success) setMarkets(data.data || []); else setError('Failed to fetch markets'); } catch (err) { setError('Network error. Please check if the server is running.'); } finally { setLoading(false); }
+    };
+
+    useEffect(() => { const admin = localStorage.getItem('admin'); if (!admin) { navigate('/'); return; } fetchMarkets(); }, [navigate]);
+    useRefreshOnMarketReset(fetchMarkets);
+
+    const handleLogout = () => { localStorage.removeItem('admin'); sessionStorage.removeItem('adminPassword'); navigate('/'); };
+    const handleCreate = () => { setEditingMarket(null); setFormDefaultType('main'); setShowForm(true); };
+    const handleEdit = (market) => { setEditingMarket(market); setFormDefaultType('main'); setShowForm(true); };
+    const handleFormClose = () => { setShowForm(false); setEditingMarket(null); fetchMarkets(); };
+
+    const getAuthHeaders = () => {
+        const admin = JSON.parse(localStorage.getItem('admin') || '{}');
+        const password = sessionStorage.getItem('adminPassword') || '';
+        return { 'Content-Type': 'application/json', 'Authorization': `Basic ${btoa(`${admin.username}:${password}`)}` };
+    };
+
+    return (
+        <AdminLayout onLogout={handleLogout} title="Markets">
+            <div className="min-w-0">
+                {error && <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm sm:text-base">{error}</div>}
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-3 sm:mb-6 truncate text-slate-800">Markets Management</h1>
+
+                {showForm && (
+                    <MarketForm market={editingMarket} defaultMarketType={formDefaultType} onClose={handleFormClose} onSuccess={handleFormClose} apiBaseUrl={API_BASE_URL} getAuthHeaders={getAuthHeaders} />
+                )}
+
+                {loading ? (
+                    <div className="text-center py-8 sm:py-12"><p className="text-slate-500 text-sm sm:text-base">Loading markets...</p></div>
+                ) : (
+                    <section>
+                        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                            <h2 className="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
+                                <span className="inline-block w-1 h-6 sm:h-7 bg-blue-600 rounded-full" />
+                                Main / Daily Markets
+                            </h2>
+                            <button onClick={handleCreate} className="w-full sm:w-auto px-4 py-3 sm:py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-colors text-sm sm:text-base">
+                                + Add Market
+                            </button>
+                        </div>
+                        <MarketList markets={mainMarkets} onEdit={handleEdit} onDelete={fetchMarkets} apiBaseUrl={API_BASE_URL} getAuthHeaders={getAuthHeaders} />
+                    </section>
+                )}
+            </div>
+        </AdminLayout>
+    );
+};
+
+export default Markets;

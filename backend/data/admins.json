@@ -1,0 +1,12 @@
+[
+  {
+    "_id": "c96460e8-0368-4dc3-86c3-6bbcc0a717c8",
+    "username": "admin",
+    "password": "admin123",
+    "role": "super_admin",
+    "email": "admin@admin.com",
+    "phone": "9999999999",
+    "status": "active",
+    "createdAt": "2026-02-10T07:47:03.304Z"
+  }
+]

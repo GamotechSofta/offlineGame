@@ -1,0 +1,28 @@
+[
+  {
+    "id": "ed200ef0-72ae-4cd5-bf9b-16dda3b1540b",
+    "userId": "0ab74c0e-91a0-4153-9825-ea5965dce60b",
+    "marketId": "5431fe87-7bcd-4095-bbfe-28822e1a3456",
+    "marketName": "Roshan Bazaar",
+    "betType": "single",
+    "betNumber": "0",
+    "amount": 10,
+    "betOn": "open",
+    "scheduledDate": null,
+    "status": "pending",
+    "createdAt": "2026-02-10T12:38:20.408Z"
+  },
+  {
+    "id": "1bfed81c-3c54-4df2-94b6-08feeb1342dd",
+    "userId": "0ab74c0e-91a0-4153-9825-ea5965dce60b",
+    "marketId": "5431fe87-7bcd-4095-bbfe-28822e1a3456",
+    "marketName": "Roshan Bazaar",
+    "betType": "single",
+    "betNumber": "6",
+    "amount": 10,
+    "betOn": "open",
+    "scheduledDate": null,
+    "status": "pending",
+    "createdAt": "2026-02-10T12:38:20.408Z"
+  }
+]
